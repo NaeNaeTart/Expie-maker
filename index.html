@@ -9,8 +9,8 @@
 <body>
   <header class="topbar">
     <div class="brand">
-      <span class="logo">EXPIE</span>
-      <span class="brand-sub">Skin Maker · Casualties: Unknown</span>
+      <span class="logo">expie</span>
+      <span class="brand-sub">skin maker</span>
     </div>
     <div class="topbar-actions">
       <label class="skinname">
@@ -18,9 +18,9 @@
         <input id="skinName" type="text" value="MySkin" spellcheck="false" />
       </label>
       <input id="importFolder" type="file" accept=".png" multiple hidden />
-      <button id="importFolderBtn" class="btn" title="Import PNGs by matching filename to parts">Import PNGs</button>
+      <button id="importFolderBtn" class="btn btn-ghost" title="Import PNGs by matching filename to parts">Import</button>
       <button id="resetAllBtn" class="btn btn-ghost" title="Reset every part to the Expie base sprite">Reset all</button>
-      <button id="exportBtn" class="btn btn-primary" title="Download a game-ready skin folder as a .zip">Export skin (.zip)</button>
+      <button id="exportBtn" class="btn btn-primary" title="Download a game-ready skin folder as a .zip">Export .zip</button>
     </div>
   </header>
 
@@ -35,15 +35,15 @@
     <section class="editor-panel">
       <div class="editor-toolbar">
         <div class="tools" role="toolbar" aria-label="Drawing tools">
-          <button class="tool" data-tool="pencil" title="Pencil (B)">✏️<span>Pencil</span></button>
-          <button class="tool" data-tool="eraser" title="Eraser (E)">🧽<span>Eraser</span></button>
-          <button class="tool" data-tool="fill" title="Fill bucket (G)">🪣<span>Fill</span></button>
-          <button class="tool" data-tool="picker" title="Eyedropper (I)">💧<span>Pick</span></button>
+          <button class="tool" data-tool="pencil" title="Pencil (B)" aria-label="Pencil">✏️</button>
+          <button class="tool" data-tool="eraser" title="Eraser (E)" aria-label="Eraser">🧽</button>
+          <button class="tool" data-tool="fill" title="Fill bucket (G)" aria-label="Fill">🪣</button>
+          <button class="tool" data-tool="picker" title="Eyedropper (I)" aria-label="Eyedropper">💧</button>
         </div>
         <div class="toolbar-sep"></div>
         <div class="history">
-          <button id="undoBtn" class="btn btn-ghost" title="Undo (Ctrl+Z)">↩ Undo</button>
-          <button id="redoBtn" class="btn btn-ghost" title="Redo (Ctrl+Y)">↪ Redo</button>
+          <button id="undoBtn" class="btn btn-icon" title="Undo (Ctrl+Z)" aria-label="Undo">↩</button>
+          <button id="redoBtn" class="btn btn-icon" title="Redo (Ctrl+Y)" aria-label="Redo">↪</button>
         </div>
         <div class="toolbar-sep"></div>
         <label class="zoomctl">Zoom
@@ -83,7 +83,7 @@
         </div>
       </div>
       <div id="palette" class="palette"></div>
-      <button id="addSwatch" class="btn btn-ghost btn-small">+ Save color to palette</button>
+      <button id="addSwatch" class="btn btn-ghost btn-small">+ Save color</button>
 
       <div class="panel-title">Face preview</div>
       <p class="hint">Selected head shape with eyes overlaid (approximate in-game layering).</p>

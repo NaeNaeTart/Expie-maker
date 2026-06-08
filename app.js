@@ -114,7 +114,7 @@
       item.className = "part-item";
       item.dataset.name = p.name;
       item.innerHTML = `
-        <canvas class="part-thumb" width="34" height="34" data-name="${p.name}"></canvas>
+        <canvas class="part-thumb" width="28" height="28" data-name="${p.name}"></canvas>
         <div class="part-meta">
           <span class="part-name">${p.label}</span>
           <span class="part-dims">${p.width}×${p.height} · ${p.folder}</span>
@@ -130,13 +130,13 @@
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     const d = partData[name];
-    ctx.clearRect(0, 0, 34, 34);
+    ctx.clearRect(0, 0, 28, 28);
     const oc = new OffscreenCanvas(d.w, d.h);
     const octx = oc.getContext("2d");
     octx.putImageData(new ImageData(new Uint8ClampedArray(d.pixels), d.w, d.h), 0, 0);
-    const scale = Math.min(30 / d.w, 30 / d.h);
-    const x = (34 - d.w * scale) / 2;
-    const y = (34 - d.h * scale) / 2;
+    const scale = Math.min(24 / d.w, 24 / d.h);
+    const x = (28 - d.w * scale) / 2;
+    const y = (28 - d.h * scale) / 2;
     ctx.imageSmoothingEnabled = false;
     ctx.drawImage(oc, x, y, d.w * scale, d.h * scale);
   }
