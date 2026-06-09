@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Expie Maker — Casualties: Unknown Skin Maker</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">expie</span>
+      <span class="brand-sub">skin maker</span>
+    </div>
+    <div class="topbar-actions">
+      <label class="skinname">
+        Skin name
+        <input id="skinName" type="text" value="MySkin" spellcheck="false" />
+      </label>
+      <input id="importFolder" type="file" accept=".png" multiple hidden />
+      <button id="importFolderBtn" class="btn btn-ghost" title="Import PNGs by matching filename to parts">Import</button>
+      <button id="resetAllBtn" class="btn btn-ghost" title="Reset every part to the Expie base sprite">Reset all</button>
+      <button id="exportBtn" class="btn btn-primary" title="Download a game-ready skin folder as a .zip">Export .zip</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- Parts list -->
+    <aside class="parts-panel">
+      <div class="panel-title">Sprites</div>
+      <div id="partsList" class="parts-list"></div>
+    </aside>
+
+    <!-- Editor -->
+    <section class="editor-panel">
+      <div class="editor-toolbar">
+        <div class="tools" role="toolbar" aria-label="Drawing tools">
+          <button class="tool" data-tool="pencil" title="Pencil (B)" aria-label="Pencil">✏️</button>
+          <button class="tool" data-tool="eraser" title="Eraser (E)" aria-label="Eraser">🧽</button>
+          <button class="tool" data-tool="fill" title="Fill bucket (G)" aria-label="Fill">🪣</button>
+          <button class="tool" data-tool="picker" title="Eyedropper (I)" aria-label="Eyedropper">💧</button>
+        </div>
+        <div class="toolbar-sep"></div>
+        <div class="history">
+          <button id="undoBtn" class="btn btn-icon" title="Undo (Ctrl+Z)" aria-label="Undo">↩</button>
+          <button id="redoBtn" class="btn btn-icon" title="Redo (Ctrl+Y)" aria-label="Redo">↪</button>
+        </div>
+        <div class="toolbar-sep"></div>
+        <label class="zoomctl">Zoom
+          <input id="zoom" type="range" min="4" max="40" step="1" value="18" />
+        </label>
+        <label class="gridctl"><input id="gridToggle" type="checkbox" checked /> Grid</label>
+        <div class="toolbar-sep"></div>
+        <button id="partResetBtn" class="btn btn-ghost" title="Reset this part to base">Reset part</button>
+        <input id="importPart" type="file" accept=".png" hidden />
+        <button id="importPartBtn" class="btn btn-ghost" title="Replace this part from a PNG">Import part</button>
+      </div>
+
+      <div class="canvas-wrap">
+        <div id="canvasStage" class="canvas-stage">
+          <canvas id="bgCanvas" class="pixel-canvas bg"></canvas>
+          <canvas id="editCanvas" class="pixel-canvas"></canvas>
+          <canvas id="gridCanvas" class="pixel-canvas grid"></canvas>
+        </div>
+      </div>
+      <div class="editor-status">
+        <span id="partTitle">—</span>
+        <span id="partDims" class="muted"></span>
+        <span id="cursorPos" class="muted"></span>
+      </div>
+    </section>
+
+    <!-- Color + preview -->
+    <aside class="side-panel">
+      <div class="panel-title">Color</div>
+      <div class="color-row">
+        <input id="colorPicker" type="color" value="#5b8cff" />
+        <div class="color-readout">
+          <span id="colorHex">#5B8CFF</span>
+          <label class="alpha">A
+            <input id="alpha" type="range" min="0" max="255" step="1" value="255" />
+          </label>
+        </div>
+      </div>
+      <div id="palette" class="palette"></div>
+      <button id="addSwatch" class="btn btn-ghost btn-small">+ Save color</button>
+
+      <div class="panel-title">Face preview</div>
+      <p class="hint">Selected head shape with eyes overlaid (approximate in-game layering).</p>
+      <div class="preview-controls">
+        <label>Head
+          <select id="previewHead"></select>
+        </label>
+        <label>Eyes
+          <select id="previewEyes"></select>
+        </label>
+      </div>
+      <div class="preview-wrap">
+        <canvas id="previewCanvas" class="pixel-canvas"></canvas>
+      </div>
+    </aside>
+  </main>
+
+  <div id="toast" class="toast" hidden></div>
+  <script src="zip.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

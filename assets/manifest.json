@@ -1,0 +1,311 @@
+{
+  "skinName": "Expie",
+  "parts": [
+    {
+      "name": "experimentEyeClosed",
+      "folder": "Head",
+      "group": "Eyes",
+      "label": "Eye Closed",
+      "width": 26,
+      "height": 12,
+      "hasTxt": false
+    },
+    {
+      "name": "experimentEyeGone",
+      "folder": "Head",
+      "group": "Eyes",
+      "label": "Eye Gone",
+      "width": 26,
+      "height": 12,
+      "hasTxt": false
+    },
+    {
+      "name": "experimentEyeGoneHealed",
+      "folder": "Head",
+      "group": "Eyes",
+      "label": "Eye Gone Healed",
+      "width": 26,
+      "height": 12,
+      "hasTxt": false
+    },
+    {
+      "name": "experimentEyeHalfClosed",
+      "folder": "Head",
+      "group": "Eyes",
+      "label": "Eye Half Closed",
+      "width": 26,
+      "height": 12,
+      "hasTxt": false
+    },
+    {
+      "name": "experimentEyeHalfClosedBack",
+      "folder": "Head",
+      "group": "Eyes",
+      "label": "Eye Half Closed Back",
+      "width": 26,
+      "height": 12,
+      "hasTxt": false
+    },
+    {
+      "name": "experimentEyeHappy",
+      "folder": "Head",
+      "group": "Eyes",
+      "label": "Eye Happy",
+      "width": 26,
+      "height": 12,
+      "hasTxt": false
+    },
+    {
+      "name": "experimentEyeLookBack",
+      "folder": "Head",
+      "group": "Eyes",
+      "label": "Eye Look Back",
+      "width": 26,
+      "height": 12,
+      "hasTxt": false
+    },
+    {
+      "name": "experimentEyeOpen",
+      "folder": "Head",
+      "group": "Eyes",
+      "label": "Eye Open",
+      "width": 26,
+      "height": 12,
+      "hasTxt": false
+    },
+    {
+      "name": "experimentEyePanic",
+      "folder": "Head",
+      "group": "Eyes",
+      "label": "Eye Panic",
+      "width": 26,
+      "height": 12,
+      "hasTxt": false
+    },
+    {
+      "name": "experimentEyeSad",
+      "folder": "Head",
+      "group": "Eyes",
+      "label": "Eye Sad",
+      "width": 26,
+      "height": 12,
+      "hasTxt": false
+    },
+    {
+      "name": "experimentEyeSadBack",
+      "folder": "Head",
+      "group": "Eyes",
+      "label": "Eye Sad Back",
+      "width": 26,
+      "height": 12,
+      "hasTxt": false
+    },
+    {
+      "name": "experimentEyeScared",
+      "folder": "Head",
+      "group": "Eyes",
+      "label": "Eye Scared",
+      "width": 26,
+      "height": 12,
+      "hasTxt": false
+    },
+    {
+      "name": "experimentEyeScaredBack",
+      "folder": "Head",
+      "group": "Eyes",
+      "label": "Eye Scared Back",
+      "width": 26,
+      "height": 12,
+      "hasTxt": false
+    },
+    {
+      "name": "experimentHead",
+      "folder": "Head",
+      "group": "Head Shapes",
+      "label": "Head",
+      "width": 28,
+      "height": 16,
+      "hasTxt": true
+    },
+    {
+      "name": "experimentHeadBack",
+      "folder": "Head",
+      "group": "Head Shapes",
+      "label": "Head Back",
+      "width": 28,
+      "height": 16,
+      "hasTxt": true
+    },
+    {
+      "name": "experimentHeadBackMouth",
+      "folder": "Head",
+      "group": "Head Shapes",
+      "label": "Head Back Mouth",
+      "width": 28,
+      "height": 16,
+      "hasTxt": true
+    },
+    {
+      "name": "experimentHeadBackMouthMini",
+      "folder": "Head",
+      "group": "Head Shapes",
+      "label": "Head Back Mouth Mini",
+      "width": 28,
+      "height": 16,
+      "hasTxt": true
+    },
+    {
+      "name": "experimentHeadDisfigured1",
+      "folder": "Head",
+      "group": "Head Shapes",
+      "label": "Head Disfigured 1",
+      "width": 28,
+      "height": 16,
+      "hasTxt": true
+    },
+    {
+      "name": "experimentHeadDisfigured1Healed",
+      "folder": "Head",
+      "group": "Head Shapes",
+      "label": "Head Disfigured 1Healed",
+      "width": 28,
+      "height": 16,
+      "hasTxt": true
+    },
+    {
+      "name": "experimentHeadDisfigured2",
+      "folder": "Head",
+      "group": "Head Shapes",
+      "label": "Head Disfigured 2",
+      "width": 28,
+      "height": 16,
+      "hasTxt": true
+    },
+    {
+      "name": "experimentHeadDisfigured2Healed",
+      "folder": "Head",
+      "group": "Head Shapes",
+      "label": "Head Disfigured 2Healed",
+      "width": 28,
+      "height": 16,
+      "hasTxt": true
+    },
+    {
+      "name": "experimentHeadDisfigured3",
+      "folder": "Head",
+      "group": "Head Shapes",
+      "label": "Head Disfigured 3",
+      "width": 28,
+      "height": 16,
+      "hasTxt": true
+    },
+    {
+      "name": "experimentHeadDisfigured3Healed",
+      "folder": "Head",
+      "group": "Head Shapes",
+      "label": "Head Disfigured 3Healed",
+      "width": 28,
+      "height": 16,
+      "hasTxt": true
+    },
+    {
+      "name": "experimentNosebleed",
+      "folder": "Head",
+      "group": "Extras",
+      "label": "Nosebleed",
+      "width": 14,
+      "height": 12,
+      "hasTxt": false
+    },
+    {
+      "name": "experimentCrus",
+      "folder": "Body",
+      "group": "Body",
+      "label": "Crus",
+      "width": 6,
+      "height": 10,
+      "hasTxt": true
+    },
+    {
+      "name": "experimentDownArm",
+      "folder": "Body",
+      "group": "Body",
+      "label": "Down Arm",
+      "width": 6,
+      "height": 16,
+      "hasTxt": true
+    },
+    {
+      "name": "experimentDownTorso",
+      "folder": "Body",
+      "group": "Body",
+      "label": "Down Torso",
+      "width": 10,
+      "height": 12,
+      "hasTxt": true
+    },
+    {
+      "name": "experimentFoot",
+      "folder": "Body",
+      "group": "Body",
+      "label": "Foot",
+      "width": 8,
+      "height": 15,
+      "hasTxt": true
+    },
+    {
+      "name": "experimentHandB",
+      "folder": "Body",
+      "group": "Body",
+      "label": "Hand B",
+      "width": 8,
+      "height": 6,
+      "hasTxt": true
+    },
+    {
+      "name": "experimentHandF",
+      "folder": "Body",
+      "group": "Body",
+      "label": "Hand F",
+      "width": 8,
+      "height": 6,
+      "hasTxt": true
+    },
+    {
+      "name": "experimentTail",
+      "folder": "Body",
+      "group": "Body",
+      "label": "Tail",
+      "width": 54,
+      "height": 22,
+      "hasTxt": true
+    },
+    {
+      "name": "experimentThigh",
+      "folder": "Body",
+      "group": "Body",
+      "label": "Thigh",
+      "width": 8,
+      "height": 13,
+      "hasTxt": true
+    },
+    {
+      "name": "experimentUpArm",
+      "folder": "Body",
+      "group": "Body",
+      "label": "Up Arm",
+      "width": 6,
+      "height": 14,
+      "hasTxt": true
+    },
+    {
+      "name": "experimentUpTorso",
+      "folder": "Body",
+      "group": "Body",
+      "label": "Up Torso",
+      "width": 10,
+      "height": 12,
+      "hasTxt": true
+    }
+  ]
+}
