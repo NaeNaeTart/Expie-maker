@@ -89,4 +89,5 @@ Pure vanilla HTML/CSS/JS — no frameworks, no build step, no external dependenc
 
 ## License
 
-MIT
+AGPL-V3
+
