@@ -1209,6 +1209,20 @@
     }
   }
 
+  function applyUIOverhaul(enabled) {
+    if (enabled) {
+      document.body.classList.add("experimental-ui");
+    } else {
+      document.body.classList.remove("experimental-ui");
+    }
+
+    if (currentPart && partData[currentPart]) {
+      const d = partData[currentPart];
+      drawBg(d.w, d.h, editCanvas.width, editCanvas.height);
+      renderCanvases();
+    }
+  }
+
 
   // ─── Load manifest + base PNGs ──────────────────────────────────────
   async function init() {
@@ -1259,6 +1273,14 @@
     // Load studio theme settings
     const savedTheme = localStorage.getItem("expie_theme") || "obsidian";
     applyTheme(savedTheme);
+
+    // Load experimental UI settings
+    const savedUIOverhaul = localStorage.getItem("expie_experimental_ui_overhaul") === "true";
+    const uiOverhaulToggle = $("#experimentalUIOverhaulToggle");
+    if (uiOverhaulToggle) {
+      uiOverhaulToggle.checked = savedUIOverhaul;
+    }
+    applyUIOverhaul(savedUIOverhaul);
 
     startSnapshotTimer();
 
@@ -2965,7 +2987,7 @@
         changelogModal.hidden = false;
         changelogContent.innerHTML = `<p style="text-align: center; color: var(--muted); padding: 24px;">Loading changelog...</p>`;
         try {
-          const response = await fetch("CHANGELOG.md");
+          const response = await fetch("CHANGELOG.md?t=" + Date.now());
           if (!response.ok) {
             throw new Error(`Status ${response.status}`);
           }
@@ -3002,7 +3024,7 @@
         contributorsModal.hidden = false;
         contributorsContent.innerHTML = `<p style="text-align: center; color: var(--muted); padding: 24px;">Loading contributors...</p>`;
         try {
-          const response = await fetch("CONTRIBUTORS.md");
+          const response = await fetch("CONTRIBUTORS.md?t=" + Date.now());
           if (!response.ok) {
             throw new Error(`Status ${response.status}`);
           }
@@ -3049,6 +3071,15 @@
         const selected = e.target.value;
         localStorage.setItem("expie_theme", selected);
         applyTheme(selected);
+      });
+    }
+
+    const uiOverhaulToggle = $("#experimentalUIOverhaulToggle");
+    if (uiOverhaulToggle) {
+      uiOverhaulToggle.addEventListener("change", (e) => {
+        const enabled = e.target.checked;
+        localStorage.setItem("expie_experimental_ui_overhaul", enabled);
+        applyUIOverhaul(enabled);
       });
     }
 

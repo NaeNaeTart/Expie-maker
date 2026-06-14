@@ -2,6 +2,24 @@
 
 All notable changes to the **Expie-maker** skin editing platform will be documented in this file.
 
+## [1.2.0] - 2026-06-14
+
+### ✨ New Features
+
+#### 🧪 1. Experimental UI Overhaul (Glassmorphism & Floating Cards)
+- **High-Fidelity Dashboard Layout**: Opt-in to a sleek, modern glassmorphic theme dashboard that turns panels into floating, elevated glass cards (`backdrop-filter` saturation and blur overrides).
+- **Interactive Micro-Animations**: Bouncy tool scaling and glows on active tools matching custom visual theme color accents, with hover side transitions on parts lists.
+- **Ambient Ambient float Loop**: Smooth animated multi-gradient fluid layers (`ambientFloat`) that run in the viewport background to create depth.
+- **Responsive Sizing Logic**: Recalibrated viewport grids (`calc(100vh - 92px)`) to keep editing operations and previews perfectly within the viewport boundaries, avoiding any vertical browser window scrolling.
+- **Persistence & Fast Refreshes**: Integrates cleanly into `localStorage` (`expie_experimental_ui_overhaul`) and triggers zero-latency JS redraw checks without needing a page refresh.
+
+#### 🎨 2. Palette Shading Ramp Generator
+- **Multi-Step Shading Builder**: Automatically generate mathematical color progression ramps (lightness/darkness scales) from your active color selection.
+- **Mathematical Shading Profiles**: Choose between **Warm-Cool Shifts**, **Monochromatic Steps**, and **Vibrant Highlights** to generate beautiful color paths.
+- **Library Integration**: One-click library saving to instantly commit all generated shades to your active workspace swatches, allowing fast access to shaded tones.
+
+---
+
 ## [1.1.0] - 2026-06-14
 
 ### ✨ New Features
