@@ -235,6 +235,7 @@
         const img = new Image();
         img.src = item;
         await img.decode();
+        
         tempCtx.clearRect(0, 0, d.w, d.h);
         tempCtx.drawImage(img, 0, 0);
         const id = tempCtx.getImageData(0, 0, d.w, d.h);
@@ -318,6 +319,11 @@
           editedParts.push(name);
           localStorage.setItem(`expie_part_${name}`, partData[name].canvas.toDataURL("image/png"));
 
+          localStorage.setItem(`expie_dims_${name}`, JSON.stringify({
+            pivotX: partData[name].pivotX !== undefined ? partData[name].pivotX : 0.5,
+            pivotY: partData[name].pivotY !== undefined ? partData[name].pivotY : 0.5
+          }));
+
           // Save current layer state
           if (partData[name].layers) {
             tempCanvas.width = partData[name].w;
@@ -350,6 +356,7 @@
         } else {
           localStorage.removeItem(`expie_part_${name}`);
           localStorage.removeItem(`expie_layers_${name}`);
+          localStorage.removeItem(`expie_dims_${name}`);
           localStorage.removeItem(`expie_undo_${name}`);
           localStorage.removeItem(`expie_redo_${name}`);
         }
@@ -392,6 +399,15 @@
         await img.decode();
 
         const d = partData[name];
+
+        // Restore custom pivots if they exist
+        const rawDims = localStorage.getItem(`expie_dims_${name}`);
+        if (rawDims) {
+          const dims = JSON.parse(rawDims);
+          d.pivotX = dims.pivotX !== undefined ? dims.pivotX : 0.5;
+          d.pivotY = dims.pivotY !== undefined ? dims.pivotY : 0.5;
+        }
+
         const ctx = d.canvas.getContext("2d");
         ctx.clearRect(0, 0, d.w, d.h);
         ctx.drawImage(img, 0, 0);
@@ -774,15 +790,51 @@
       const skinName = ($("#skinName").value || "MySkin").trim();
       
       const partsDataUrls = {};
+      const partsDims = {};
+      const partsLayers = {};
+
+      const tempCanvas = document.createElement("canvas");
+
       for (const name of Object.keys(partData)) {
         if (partData[name].edited) {
           partsDataUrls[name] = partData[name].canvas.toDataURL("image/png");
+          
+          partsDims[name] = {
+            w: partData[name].w,
+            h: partData[name].h,
+            pivotX: partData[name].pivotX !== undefined ? partData[name].pivotX : 0.5,
+            pivotY: partData[name].pivotY !== undefined ? partData[name].pivotY : 0.5
+          };
+
+          if (partData[name].layers) {
+            tempCanvas.width = partData[name].w;
+            tempCanvas.height = partData[name].h;
+            const tempCtx = tempCanvas.getContext("2d");
+            const layersToSave = [];
+            for (const ly of partData[name].layers) {
+              tempCtx.clearRect(0, 0, partData[name].w, partData[name].h);
+              tempCtx.putImageData(new ImageData(new Uint8ClampedArray(ly.pixels), partData[name].w, partData[name].h), 0, 0);
+              layersToSave.push({
+                id: ly.id,
+                name: ly.name,
+                visible: ly.visible,
+                opacity: ly.opacity,
+                pixelsUrl: tempCanvas.toDataURL("image/png")
+              });
+            }
+            partsLayers[name] = {
+              layers: layersToSave,
+              activeLayerIndex: partData[name].activeLayerIndex
+            };
+          }
         }
       }
 
       const snapshotData = {
         skinName: skinName,
         parts: partsDataUrls,
+        dims: partsDims,
+        layers: partsLayers,
         previewHead: previewHead ? previewHead.value : "",
         previewEyes: previewEyes ? previewEyes.value : ""
       };
@@ -851,7 +903,19 @@
       // Reset all parts first
       for (const name of Object.keys(partData)) {
         const d = partData[name];
+        const p = manifest.parts.find(x => x.name === name);
+        if (p) {
+          d.w = p.width;
+          d.h = p.height;
+          d.pivotX = 0.5;
+          d.pivotY = 0.5;
+          d.canvas.width = p.width;
+          d.canvas.height = p.height;
+        }
         d.pixels = new Uint8ClampedArray(d.base);
+        d.layers = null;
+        ensureLayers(name);
+
         updateCachedCanvas(name);
         d.edited = false;
         undoStacks[name] = [];
@@ -865,11 +929,19 @@
         const dataUrl = snapshotData.parts[name];
         if (!dataUrl || !partData[name]) return;
 
+        const d = partData[name];
+
+        // 1. Restore pivots if they exist
+        if (snapshotData.dims && snapshotData.dims[name]) {
+          const dims = snapshotData.dims[name];
+          d.pivotX = dims.pivotX !== undefined ? dims.pivotX : 0.5;
+          d.pivotY = dims.pivotY !== undefined ? dims.pivotY : 0.5;
+        }
+
         const img = new Image();
         img.src = dataUrl;
         await img.decode();
 
-        const d = partData[name];
         const ctx = d.canvas.getContext("2d");
         ctx.clearRect(0, 0, d.w, d.h);
         ctx.drawImage(img, 0, 0);
@@ -878,11 +950,42 @@
         d.pixels = new Uint8ClampedArray(idImg.data);
         d.edited = true;
 
+        // 2. Restore layers if they exist
+        if (snapshotData.layers && snapshotData.layers[name]) {
+          const parsed = snapshotData.layers[name];
+          const loadedLayers = [];
+          const tempCanvas = document.createElement("canvas");
+          tempCanvas.width = d.w;
+          tempCanvas.height = d.h;
+          const tempCtx = tempCanvas.getContext("2d");
+          for (const sLy of parsed.layers) {
+            const lyImg = new Image();
+            lyImg.src = sLy.pixelsUrl;
+            await lyImg.decode();
+            tempCtx.clearRect(0, 0, d.w, d.h);
+            tempCtx.drawImage(lyImg, 0, 0);
+            const lyId = tempCtx.getImageData(0, 0, d.w, d.h);
+            loadedLayers.push({
+              id: sLy.id,
+              name: sLy.name,
+              visible: sLy.visible,
+              opacity: sLy.opacity,
+              pixels: new Uint8ClampedArray(lyId.data)
+            });
+          }
+          d.layers = loadedLayers;
+          d.activeLayerIndex = parsed.activeLayerIndex;
+        } else {
+          ensureLayers(name);
+        }
+
         updatePartMetaUI(name);
         drawThumb(name);
       }));
 
       if (currentPart) {
+        renderCanvases();
+        renderLayersUI();
         drawPixels();
       }
       updateHistoryButtons();
@@ -1183,6 +1286,18 @@
 
     startSnapshotTimer();
 
+    // Restore Global PPU from localStorage
+    const savedPPU = localStorage.getItem("expie_global_ppu") || "8";
+    const globalPPUInput = $("#globalPPU");
+    const globalPPUVal = $("#globalPPUVal");
+    if (globalPPUInput) {
+      globalPPUInput.value = savedPPU;
+      const ppu = parseFloat(savedPPU);
+      if (globalPPUVal) {
+        globalPPUVal.textContent = `${ppu.toFixed(1)} (${Math.round((8.0 / ppu) * 100)}%)`;
+      }
+    }
+
     selectPart(manifest.parts[0].name);
     setTool("pencil");
     bindEvents();
@@ -1263,6 +1378,13 @@
     const d = partData[name];
     $("#partTitle").textContent = p.label;
     $("#partDims").textContent = `${d.w}×${d.h} · ${p.folder}`;
+    
+    // Sync sidebar Canvas & Pivot input fields
+    const pivotXInput = $("#partPivotXInput");
+    const pivotYInput = $("#partPivotYInput");
+    if (pivotXInput && d) pivotXInput.value = d.pivotX !== undefined ? d.pivotX : 0.5;
+    if (pivotYInput && d) pivotYInput.value = d.pivotY !== undefined ? d.pivotY : 0.5;
+
     updateHistoryButtons();
     renderCanvases();
     if (typeof updateActiveColors === "function") {
@@ -1519,7 +1641,9 @@
       pixels: new Uint8ClampedArray(d.pixels),
       layers: cloneLayers(d.layers),
       activeLayerIndex: d.activeLayerIndex,
-      globalActionId: globalActionId
+      globalActionId: globalActionId,
+      pivotX: d.pivotX !== undefined ? d.pivotX : 0.5,
+      pivotY: d.pivotY !== undefined ? d.pivotY : 0.5
     });
     if (undoStacks[name].length > MAX_UNDO) undoStacks[name].shift();
     redoStacks[name] = [];
@@ -1547,8 +1671,15 @@
             pixels: new Uint8ClampedArray(partD.pixels),
             layers: cloneLayers(partD.layers),
             activeLayerIndex: partD.activeLayerIndex,
-            globalActionId: actionId
+            globalActionId: actionId,
+            pivotX: partD.pivotX !== undefined ? partD.pivotX : 0.5,
+            pivotY: partD.pivotY !== undefined ? partD.pivotY : 0.5
           });
+
+          if (partState.pivotX !== undefined && partState.pivotY !== undefined) {
+            partD.pivotX = partState.pivotX;
+            partD.pivotY = partState.pivotY;
+          }
 
           partD.pixels = partState.pixels;
           partD.layers = partState.layers;
@@ -1564,9 +1695,24 @@
       redoStacks[currentPart].push({
         pixels: new Uint8ClampedArray(d.pixels),
         layers: cloneLayers(d.layers),
-        activeLayerIndex: d.activeLayerIndex
+        activeLayerIndex: d.activeLayerIndex,
+        pivotX: d.pivotX !== undefined ? d.pivotX : 0.5,
+        pivotY: d.pivotY !== undefined ? d.pivotY : 0.5
       });
       const state = stack.pop();
+      if (state.pivotX !== undefined && state.pivotY !== undefined) {
+        d.pivotX = state.pivotX;
+        d.pivotY = state.pivotY;
+        
+        // Update input fields in UI
+        const pivotXInput = $("#partPivotXInput");
+        const pivotYInput = $("#partPivotYInput");
+        if (pivotXInput) pivotXInput.value = d.pivotX !== undefined ? d.pivotX : 0.5;
+        if (pivotYInput) pivotYInput.value = d.pivotY !== undefined ? d.pivotY : 0.5;
+        
+        $("#partDims").textContent = `${d.w}×${d.h} · ${manifest.parts.find(x => x.name === currentPart).folder}`;
+        renderCanvases();
+      }
       d.pixels = state.pixels;
       d.layers = state.layers;
       d.activeLayerIndex = state.activeLayerIndex;
@@ -1604,8 +1750,15 @@
             pixels: new Uint8ClampedArray(partD.pixels),
             layers: cloneLayers(partD.layers),
             activeLayerIndex: partD.activeLayerIndex,
-            globalActionId: actionId
+            globalActionId: actionId,
+            pivotX: partD.pivotX !== undefined ? partD.pivotX : 0.5,
+            pivotY: partD.pivotY !== undefined ? partD.pivotY : 0.5
           });
+
+          if (partState.pivotX !== undefined && partState.pivotY !== undefined) {
+            partD.pivotX = partState.pivotX;
+            partD.pivotY = partState.pivotY;
+          }
 
           partD.pixels = partState.pixels;
           partD.layers = partState.layers;
@@ -1621,9 +1774,21 @@
       undoStacks[currentPart].push({
         pixels: new Uint8ClampedArray(d.pixels),
         layers: cloneLayers(d.layers),
-        activeLayerIndex: d.activeLayerIndex
+        activeLayerIndex: d.activeLayerIndex,
+        pivotX: d.pivotX !== undefined ? d.pivotX : 0.5,
+        pivotY: d.pivotY !== undefined ? d.pivotY : 0.5
       });
       const state = stack.pop();
+      if (state.pivotX !== undefined && state.pivotY !== undefined) {
+        d.pivotX = state.pivotX;
+        d.pivotY = state.pivotY;
+        
+        // Update input fields in UI
+        const pivotXInput = $("#partPivotXInput");
+        const pivotYInput = $("#partPivotYInput");
+        if (pivotXInput) pivotXInput.value = d.pivotX !== undefined ? d.pivotX : 0.5;
+        if (pivotYInput) pivotYInput.value = d.pivotY !== undefined ? d.pivotY : 0.5;
+      }
       d.pixels = state.pixels;
       d.layers = state.layers;
       d.activeLayerIndex = state.activeLayerIndex;
@@ -2308,10 +2473,26 @@
         try {
           const res = await fetch(`assets/base-skin/${p.folder}/${p.name}.txt`);
           if (res.ok) {
-            const txt = await res.text();
+            let txt = await res.text();
+            
+            // Apply Global Pixels to Units Scale
+            const globalPPUInput = document.getElementById("globalPPU");
+            const ppu = globalPPUInput ? parseFloat(globalPPUInput.value) : 8.0;
+            txt = txt.replace(/(float m_PixelsToUnits\s*=\s*)[0-9.]+/g, `$1${ppu}`);
+
+
+
+            // Apply Custom Part Pivots (Vector2f m_Pivot x/y)
+            if (d && d.pivotX !== undefined && d.pivotY !== undefined) {
+              const pivotBlockRegex = /(Vector2f m_Pivot\s*\r?\n\s*\d+ float x\s*=\s*)[0-9.-]+(\s*\r?\n\s*\d+ float y\s*=\s*)[0-9.-]+/g;
+              txt = txt.replace(pivotBlockRegex, `$1${d.pivotX}$2${d.pivotY}`);
+            }
+
             files.push({ name: `${skinName}/${p.folder}/${p.name}.txt`, data: new TextEncoder().encode(txt) });
           }
-        } catch (_) { /* skip if network error */ }
+        } catch (err) {
+          console.error("Failed to process txt manifest for", p.name, err);
+        }
       }
     }
     const zipBlob = ExpieZip.createZip(files);
@@ -2325,6 +2506,18 @@
   function resetPart(name, skipPreviewUpdate) {
     const d = partData[name];
     pushUndo(name);
+
+    // Reset pivot point to default center
+    d.pivotX = 0.5;
+    d.pivotY = 0.5;
+
+    if (name === currentPart) {
+      const pivotXInput = $("#partPivotXInput");
+      const pivotYInput = $("#partPivotYInput");
+      if (pivotXInput) pivotXInput.value = 0.5;
+      if (pivotYInput) pivotYInput.value = 0.5;
+    }
+
     d.pixels = new Uint8ClampedArray(d.base);
     d.layers = [{
       id: Date.now() + Math.random(),
@@ -2723,6 +2916,53 @@
       });
     }
 
+    // Global PPU scaling
+    const globalPPU = $("#globalPPU");
+    const globalPPUVal = $("#globalPPUVal");
+    if (globalPPU) {
+      globalPPU.addEventListener("input", () => {
+        const ppu = parseFloat(globalPPU.value);
+        if (globalPPUVal) {
+          globalPPUVal.textContent = `${ppu.toFixed(1)} (${Math.round((8.0 / ppu) * 100)}%)`;
+        }
+        localStorage.setItem("expie_global_ppu", ppu);
+      });
+    }
+
+
+
+    const applyPivotBtn = $("#applyPivotBtn");
+    if (applyPivotBtn) {
+      applyPivotBtn.addEventListener("click", () => {
+        if (!currentPart) return;
+        const pivotXVal = $("#partPivotXInput").value;
+        const pivotYVal = $("#partPivotYInput").value;
+        applyPivotCoordinates(currentPart, pivotXVal, pivotYVal);
+      });
+    }
+
+    // Height & Scale Guide Modal
+    const heightGuideModal = $("#heightGuideModal");
+    const dimensionInfoBtn = $("#dimensionInfoBtn");
+    if (dimensionInfoBtn && heightGuideModal) {
+      dimensionInfoBtn.addEventListener("click", () => {
+        heightGuideModal.hidden = false;
+      });
+
+      const closeHeightGuideBtn = $("#closeHeightGuideBtn");
+      if (closeHeightGuideBtn) {
+        closeHeightGuideBtn.addEventListener("click", () => {
+          heightGuideModal.hidden = true;
+        });
+      }
+
+      heightGuideModal.addEventListener("click", (e) => {
+        if (e.target === heightGuideModal) {
+          heightGuideModal.hidden = true;
+        }
+      });
+    }
+
     // Changelog Panel
     const changelogModal = $("#changelogModal");
     const changelogBtn = $("#changelogBtn");
@@ -2851,6 +3091,7 @@
   function ensureLayers(name) {
     const d = partData[name];
     if (!d) return;
+
     if (!d.layers || d.layers.length === 0) {
       d.layers = [{
         id: Date.now() + Math.random(),
@@ -2861,6 +3102,7 @@
       }];
       d.activeLayerIndex = 0;
     }
+
     if (d.activeLayerIndex === undefined || d.activeLayerIndex < 0 || d.activeLayerIndex >= d.layers.length) {
       d.activeLayerIndex = d.layers.length - 1;
     }
@@ -3333,6 +3575,35 @@
     // Convert links [text](url)
     text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" style="color: var(--active); text-decoration: underline;">$1</a>');
     return text;
+  }
+
+
+
+  function applyPivotCoordinates(name, pivotX, pivotY) {
+    const d = partData[name];
+    if (!d) return;
+
+    pivotX = parseFloat(pivotX);
+    pivotY = parseFloat(pivotY);
+
+    if (isNaN(pivotX) || pivotX < 0 || pivotX > 1) {
+      toast("Pivot X must be between 0.0 and 1.0", "err");
+      return;
+    }
+    if (isNaN(pivotY) || pivotY < 0 || pivotY > 1) {
+      toast("Pivot Y must be between 0.0 and 1.0", "err");
+      return;
+    }
+
+    pushUndo(name);
+
+    d.pivotX = pivotX;
+    d.pivotY = pivotY;
+    d.edited = true;
+
+    updatePartMetaUI(name);
+    saveLocalState();
+    toast(`Updated pivot coordinates to (${pivotX.toFixed(2)}, ${pivotY.toFixed(2)})`, "ok");
   }
 
   // ─── Init ──────────────────────────────────────────────────────────
