@@ -4,12 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Expie Maker — Casualties: Unknown Skin Maker</title>
+  <meta name="description" content="A browser-based pixel-art editor for creating custom character skins for the game Casualties: Unknown. Paint parts, preview faces, and export game-ready ZIP skins." />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
-      <span class="logo">expie</span>
+      <h1 class="logo">expie</h1>
       <span class="brand-sub">skin maker</span>
     </div>
     <div class="topbar-actions">
@@ -20,6 +21,11 @@
       <input id="importFolder" type="file" accept=".png" multiple hidden />
       <button id="importFolderBtn" class="btn btn-ghost" title="Import PNGs by matching filename to parts">Import</button>
       <button id="resetAllBtn" class="btn btn-ghost" title="Reset every part to the Expie base sprite">Reset all</button>
+      <button id="infoBtn" class="btn btn-ghost" title="Learn what this tool can do">ℹ️ Info</button>
+      <button id="changelogBtn" class="btn btn-ghost" title="See what's new in Expie Maker">📜 Changelog</button>
+      <button id="contributorsBtn" class="btn btn-ghost" title="See the amazing people who built Expie Maker">👥 Contributors</button>
+      <a href="https://github.com/NaeNaeTart/Expie-maker" target="_blank" rel="noopener noreferrer" class="btn btn-ghost" title="Visit Expie Maker on GitHub" style="text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">🐙 GitHub</a>
+      <button id="settingsBtn" class="btn btn-ghost" title="Open Settings & Snapshots">⚙️ Settings</button>
       <button id="exportBtn" class="btn btn-primary" title="Download a game-ready skin folder as a .zip">Export .zip</button>
     </div>
   </header>
@@ -27,7 +33,7 @@
   <main class="layout">
     <!-- Parts list -->
     <aside class="parts-panel">
-      <div class="panel-title">Sprites</div>
+      <h2 class="panel-title">Sprites</h2>
       <div id="partsList" class="parts-list"></div>
     </aside>
 
@@ -35,10 +41,12 @@
     <section class="editor-panel">
       <div class="editor-toolbar">
         <div class="tools" role="toolbar" aria-label="Drawing tools">
-          <button class="tool" data-tool="pencil" title="Pencil (B)" aria-label="Pencil">✏️</button>
-          <button class="tool" data-tool="eraser" title="Eraser (E)" aria-label="Eraser">🧽</button>
-          <button class="tool" data-tool="fill" title="Fill bucket (G)" aria-label="Fill">🪣</button>
-          <button class="tool" data-tool="picker" title="Eyedropper (I)" aria-label="Eyedropper">💧</button>
+          <button id="toolPencil" class="tool" data-tool="pencil" title="Pencil (B)" aria-label="Pencil">✏️</button>
+          <button id="toolEraser" class="tool" data-tool="eraser" title="Eraser (E)" aria-label="Eraser">🧽</button>
+          <button id="toolFill" class="tool" data-tool="fill" title="Fill bucket (G)" aria-label="Fill">🪣</button>
+          <button id="toolReplace" class="tool" data-tool="replace" title="Color Replace (R)" aria-label="Color Replace">🔄</button>
+          <button id="toolPicker" class="tool" data-tool="picker" title="Eyedropper (I)" aria-label="Eyedropper">💧</button>
+          <button id="toolShading" class="tool" data-tool="shading" title="Burn / Dodge Shading (S)" aria-label="Shading">🌗</button>
         </div>
         <div class="toolbar-sep"></div>
         <div class="history">
@@ -46,10 +54,109 @@
           <button id="redoBtn" class="btn btn-icon" title="Redo (Ctrl+Y)" aria-label="Redo">↪</button>
         </div>
         <div class="toolbar-sep"></div>
+        <div class="transforms">
+          <button id="flipHorizBtn" class="btn btn-icon" title="Flip Horizontally (H)" aria-label="Flip Horizontally">↔️</button>
+          <button id="flipVertBtn" class="btn btn-icon" title="Flip Vertically (V)" aria-label="Flip Vertically">↕️</button>
+        </div>
+        <div class="toolbar-sep"></div>
         <label class="zoomctl">Zoom
           <input id="zoom" type="range" min="4" max="40" step="1" value="18" />
         </label>
+        <div class="toolbar-sep"></div>
+        <label class="opacityctl" title="Brush Opacity">Opacity
+          <input id="brushOpacity" type="range" min="0" max="100" step="1" value="100" />
+          <span id="brushOpacityVal">100%</span>
+        </label>
         <label class="gridctl"><input id="gridToggle" type="checkbox" checked /> Grid</label>
+        <label class="mirrorctl" title="Mirror drawing horizontally across the center line"><input id="mirrorToggle" type="checkbox" /> 🪞 Mirror</label>
+        <div class="toolbar-sep"></div>
+        <div class="overlay-controls" style="display: flex; align-items: center; gap: 8px; position: relative;">
+          <input id="importOverlay" type="file" accept="image/*" hidden />
+          <button id="importOverlayBtn" class="btn btn-ghost" style="padding: 4px 8px; font-size: 11px;" title="Load a reference image overlay">🖼️ Reference</button>
+          
+          <div id="activeOverlayControls" style="display: none; align-items: center; gap: 6px;">
+            <label class="opacityctl" id="overlayOpacityLabel" title="Reference Opacity" style="gap: 6px; font-size: 11px; align-items: center; display: flex;">
+              Ref Opacity
+              <input id="overlayOpacity" type="range" min="0" max="100" step="1" value="35" style="width: 60px;" />
+              <span id="overlayOpacityVal" style="min-width: 28px; text-align: right;">35%</span>
+            </label>
+            
+            <button id="overlaySettingsBtn" class="btn btn-ghost" title="Overlay Position & Filters" style="padding: 2px 6px; font-size: 11px;">⚙️</button>
+            <button id="clearOverlayBtn" class="btn btn-ghost" title="Remove reference overlay" style="padding: 2px 6px; font-size: 11px;">❌</button>
+            
+            <!-- Reference Overlay Settings Popover -->
+            <div id="overlayPopover" class="overlay-popover" hidden>
+              <div class="popover-header">
+                <span class="popover-title">Reference Settings</span>
+                <button id="closePopoverBtn" class="popover-close-btn" type="button">&times;</button>
+              </div>
+              <div class="popover-body">
+                <div class="popover-row">
+                  <label for="overlayFitSelect">Fit Mode</label>
+                  <select id="overlayFitSelect" class="settings-select">
+                    <option value="stretch">Stretch to Fit</option>
+                    <option value="contain" selected>Contain & Center</option>
+                    <option value="cover">Cover Canvas</option>
+                    <option value="original">Original (Pixel-Perfect)</option>
+                  </select>
+                </div>
+                
+                <div class="popover-row">
+                  <div class="popover-label-row">
+                    <label for="overlayScaleSlider">Scale</label>
+                    <span id="overlayScaleVal">100%</span>
+                  </div>
+                  <input id="overlayScaleSlider" type="range" min="10" max="800" step="5" value="100" />
+                </div>
+                
+                <div class="popover-grid">
+                  <div class="popover-grid-cell">
+                    <label for="overlayOffsetXInput">Offset X</label>
+                    <input id="overlayOffsetXInput" type="number" step="0.5" value="0" />
+                  </div>
+                  <div class="popover-grid-cell">
+                    <label for="overlayOffsetYInput">Offset Y</label>
+                    <input id="overlayOffsetYInput" type="number" step="0.5" value="0" />
+                  </div>
+                </div>
+                
+                <div class="popover-divider"></div>
+                
+                <div class="popover-row">
+                  <span class="popover-section-title">Visual Filters</span>
+                  <div class="popover-checkboxes">
+                    <label class="checkbox-label" title="Invert the colors of the reference image for better visibility on dark canvases">
+                      <input id="overlayFilterInvert" type="checkbox" /> Invert Colors
+                    </label>
+                    <label class="checkbox-label" title="Convert the reference image to grayscale">
+                      <input id="overlayFilterGrayscale" type="checkbox" /> Grayscale
+                    </label>
+                  </div>
+                </div>
+                
+                <div class="popover-row">
+                  <div class="popover-label-row">
+                    <label class="checkbox-label" title="Tint the reference overlay with a solid color selection">
+                      <input id="overlayFilterTintToggle" type="checkbox" /> Color Tint
+                    </label>
+                    <input id="overlayFilterTintColor" type="color" value="#ff0000" disabled />
+                  </div>
+                </div>
+                
+                <div class="popover-divider"></div>
+                
+                <div class="popover-actions">
+                  <button id="resetOverlayPosBtn" class="btn btn-small" type="button">🔄 Reset Positioning</button>
+                </div>
+                
+                <div class="popover-help">
+                  <div>🖱️ <strong>Right-drag</strong> on canvas to Pan</div>
+                  <div>🛞 <strong>Alt + Scroll</strong> to Resize</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
         <div class="toolbar-sep"></div>
         <button id="partResetBtn" class="btn btn-ghost" title="Reset this part to base">Reset part</button>
         <input id="importPart" type="file" accept=".png" hidden />
@@ -60,6 +167,7 @@
         <div id="canvasStage" class="canvas-stage">
           <canvas id="bgCanvas" class="pixel-canvas bg"></canvas>
           <canvas id="editCanvas" class="pixel-canvas"></canvas>
+          <canvas id="referenceCanvas" class="pixel-canvas reference-overlay"></canvas>
           <canvas id="gridCanvas" class="pixel-canvas grid"></canvas>
         </div>
       </div>
@@ -72,34 +180,364 @@
 
     <!-- Color + preview -->
     <aside class="side-panel">
-      <div class="panel-title">Color</div>
+      <h2 class="panel-title">Color</h2>
       <div class="color-row">
         <input id="colorPicker" type="color" value="#5b8cff" />
         <div class="color-readout">
           <span id="colorHex">#5B8CFF</span>
-          <label class="alpha">A
-            <input id="alpha" type="range" min="0" max="255" step="1" value="255" />
-          </label>
         </div>
       </div>
       <div id="palette" class="palette"></div>
       <button id="addSwatch" class="btn btn-ghost btn-small">+ Save color</button>
 
-      <div class="panel-title">Face preview</div>
-      <p class="hint">Selected head shape with eyes overlaid (approximate in-game layering).</p>
+      <div class="active-colors-container" style="margin-top: 12px; border-top: 1px solid var(--border); padding-top: 10px;">
+        <div class="active-colors-title" style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-bottom: 6px;" title="All colors currently used on this part's canvas">Canvas Colors</div>
+        <div id="activeColors" class="palette active-colors-list" style="max-height: 52px; overflow-y: auto; gap: 4px;"></div>
+      </div>
+      
+      <div id="replaceSettings" class="replace-settings">
+        <div class="replace-settings-title">Replace Options</div>
+        <div class="setting-row">
+          <label class="tolerance-label" title="Tolerance for matching colors (0 = exact match)">
+            Tolerance: <span id="toleranceVal">15</span>
+            <input id="replaceTolerance" type="range" min="0" max="100" step="1" value="15" />
+          </label>
+        </div>
+        <div class="setting-row">
+          <label class="checkbox-label" title="Preserve shading gradients based on relative brightness (white-to-darkness)">
+            <input id="replacePreserveShading" type="checkbox" checked /> Preserve Shading
+          </label>
+        </div>
+      </div>
+
+      <div id="shadingSettings" class="replace-settings" style="display: none;">
+        <div class="replace-settings-title">Shading Options</div>
+        <div class="setting-row" style="display: flex; gap: 12px; margin-bottom: 8px;">
+          <label class="radio-label" style="display: flex; align-items: center; gap: 4px; font-size: 11px; cursor: pointer; color: var(--fg);">
+            <input type="radio" name="shadingMode" value="dodge" checked /> ☀️ Dodge
+          </label>
+          <label class="radio-label" style="display: flex; align-items: center; gap: 4px; font-size: 11px; cursor: pointer; color: var(--fg);">
+            <input type="radio" name="shadingMode" value="burn" /> 🌙 Burn
+          </label>
+        </div>
+        <div class="setting-row">
+          <label class="tolerance-label" title="Shading intensity/amount per stroke">
+            Exposure: <span id="shadingIntensityVal">15%</span>
+            <input id="shadingIntensity" type="range" min="1" max="100" step="1" value="15" />
+          </label>
+        </div>
+      </div>
+
+      <div class="fx-panel replace-settings">
+        <div class="replace-settings-title">Sprite FX</div>
+        <div class="setting-row" style="display: flex; gap: 8px; margin-top: 6px;">
+          <button id="outlineOuterBtn" class="btn btn-ghost btn-small" style="flex: 1; padding: 4px 6px; font-size: 10px;" title="Draw outline on empty adjacent pixels">Outer Outline</button>
+          <button id="outlineInnerBtn" class="btn btn-ghost btn-small" style="flex: 1; padding: 4px 6px; font-size: 10px;" title="Draw outline inside existing boundaries">Inner Outline</button>
+        </div>
+      </div>
+
+      <!-- Layers panel -->
+      <div class="fx-panel replace-settings">
+        <div class="replace-settings-title" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <span>Layers</span>
+          <button id="addLayerBtn" class="btn btn-ghost btn-small" style="padding: 2px 6px; font-size: 10px; border: 1px solid var(--border);" title="Create a new transparent layer on top">+ Add Layer</button>
+        </div>
+        <div id="layersList" class="layers-list"></div>
+      </div>
+
+      <h2 class="panel-title">Preview</h2>
       <div class="preview-controls">
-        <label>Head
-          <select id="previewHead"></select>
-        </label>
-        <label>Eyes
-          <select id="previewEyes"></select>
-        </label>
+        <div id="facePreviewControls" class="preview-controls-row">
+          <label>Head
+            <select id="previewHead"></select>
+          </label>
+          <label>Eyes
+            <select id="previewEyes"></select>
+          </label>
+        </div>
       </div>
       <div class="preview-wrap">
         <canvas id="previewCanvas" class="pixel-canvas"></canvas>
       </div>
     </aside>
   </main>
+
+  <!-- Settings Modal -->
+  <div id="settingsModal" class="modal-overlay" hidden>
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-header-left">
+          <h2 class="modal-title">Settings</h2>
+          <div id="storageIndicator" class="storage-indicator">
+            <div class="storage-bar"><div id="storageBarFill" class="storage-bar-fill"></div></div>
+            <span id="storageText" class="storage-text">Storage: 0 B / 5 MB (0%)</span>
+          </div>
+        </div>
+        <button id="closeSettingsBtn" class="modal-close-btn" aria-label="Close Settings">&times;</button>
+      </div>
+      <div class="modal-body">
+        <!-- Section 1: Auto-Save & Snapshots Preferences -->
+        <div class="settings-section">
+          <h3 class="section-title">Preferences</h3>
+          
+          <div class="setting-row-flex">
+            <div class="setting-desc">
+              <span class="setting-name">Periodic Snapshots</span>
+              <span class="setting-help">Automatically save full snapshots of your character at regular intervals in addition to local auto-saving.</span>
+            </div>
+            <label class="switch">
+              <input id="autoSnapshotToggle" type="checkbox" checked />
+              <span class="slider"></span>
+            </label>
+          </div>
+          
+          <div id="snapshotIntervalRow" class="setting-row-flex">
+            <div class="setting-desc">
+              <span class="setting-name">Snapshot Interval</span>
+              <span class="setting-help">How often to automatically capture a new snapshot of the workspace.</span>
+            </div>
+            <select id="snapshotIntervalSelect" class="settings-select">
+              <option value="1">1 Minute</option>
+              <option value="3" selected>3 Minutes</option>
+              <option value="5">5 Minutes</option>
+              <option value="10">10 Minutes</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Section: Studio Theme -->
+        <div class="settings-section">
+          <h3 class="section-title">Visual Theme</h3>
+          <p class="section-help">Personalize your creative environment. Select a curated style preset to transform the studio's color palette and visual atmosphere.</p>
+          <div class="setting-row-flex" style="margin-top: 10px;">
+            <div class="setting-desc">
+              <span class="setting-name">Active Theme</span>
+              <span class="setting-help">Switch between sleek glassmorphic themes.</span>
+            </div>
+            <select id="themeSelect" class="settings-select" style="min-width: 150px;">
+              <option value="obsidian" selected>🌌 Obsidian Dusk (Dark)</option>
+              <option value="cherry-blossom">🌸 Cherry Blossom (Light)</option>
+              <option value="cyberpunk">🤖 Cyberpunk Neon (Dark)</option>
+              <option value="warm-oak">🪵 Warm Oak (Dark)</option>
+              <option value="terminal">📟 Matrix Terminal (Dark)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Section: Skins Library -->
+        <div class="settings-section">
+          <div class="section-header-flex">
+            <h3 class="section-title">Skins Library</h3>
+            <button id="saveSkinToLibraryBtn" class="btn btn-primary btn-small" style="width: auto;">💾 Save Current Skin</button>
+          </div>
+          <p class="section-help">Save entire skins separately in your local browser library. You can load, overwrite, or delete them anytime.</p>
+          <div id="skinsLibraryList" class="snapshots-list-container">
+            <div class="snapshots-empty">No saved skins in library yet.</div>
+          </div>
+        </div>
+
+        <!-- Section 2: Snapshots History -->
+        <div class="settings-section">
+          <div class="section-header-flex">
+            <h3 class="section-title">Snapshot History</h3>
+            <button id="takeManualSnapshotBtn" class="btn btn-primary btn-small" style="width: auto;">📸 Save Snapshot</button>
+          </div>
+          <p class="section-help">A rolling history of up to 10 character snapshots. Restoring a snapshot will replace your current workspace and history.</p>
+          <div id="snapshotsList" class="snapshots-list-container">
+            <div class="snapshots-empty">No saved snapshots yet.</div>
+          </div>
+        </div>
+
+        <!-- Section: Backup & Sync -->
+        <div class="settings-section">
+          <h3 class="section-title">Backup & Sync</h3>
+          <p class="section-help">Export your entire workspace, saved library skins, custom swatches, snapshots, and preferences to a single JSON backup file, or restore everything from a previous export.</p>
+          <div style="display: flex; gap: 8px; margin-top: 10px;">
+            <button id="exportSettingsBtn" class="btn btn-primary" style="flex: 1; padding: 8px 12px; font-size: 11px;">📤 Export Backup</button>
+            <button id="importSettingsBtn" class="btn btn-ghost" style="flex: 1; padding: 8px 12px; font-size: 11px;">📥 Import Backup</button>
+            <input id="importSettingsFileInput" type="file" accept=".json" style="display: none;" />
+          </div>
+        </div>
+
+        <!-- Section 4: Danger Zone -->
+        <div class="settings-section danger-zone">
+          <h3 class="section-title">Danger Zone</h3>
+          <div class="setting-row-flex">
+            <div class="setting-desc">
+              <span class="setting-name">Reset Editor & Storage</span>
+              <span class="setting-help">Permanently clear all saved snapshots, undo/redo history, local auto-saves, and custom swatches, resetting the editor to base sprites. This cannot be undone.</span>
+            </div>
+            <button id="dangerResetBtn" class="btn btn-danger">Reset Everything</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Info Modal -->
+  <div id="infoModal" class="modal-overlay" hidden>
+    <div class="modal-card info-modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">ℹ️ Expie Maker Manual</h2>
+        <button id="closeInfoBtn" class="modal-close-btn" aria-label="Close Info">&times;</button>
+      </div>
+      <div class="modal-body info-modal-body">
+        <p class="info-intro">Welcome to <strong>Expie Maker</strong>, a browser-based custom skin and pixel-art creator for <em>Casualties: Unknown</em>. Below is a guide to everything you can do in this studio!</p>
+        
+        <div class="info-grid">
+          <!-- Column 1: Drawing & Color -->
+          <div class="info-section">
+            <h3 class="info-section-title">🎨 Core Drawing Tools</h3>
+            <ul class="info-list">
+              <li>
+                <span class="info-shortcut">B</span>
+                <strong>Pencil:</strong> Standard pixel drawing brush.
+              </li>
+              <li>
+                <span class="info-shortcut">E</span>
+                <strong>Eraser:</strong> Erases canvas pixels.
+              </li>
+              <li>
+                <span class="info-shortcut">G</span>
+                <strong>Fill Bucket:</strong> Fills connected areas of the same color.
+              </li>
+              <li>
+                <span class="info-shortcut">R</span>
+                <strong>Color Replace:</strong> Swap a specific color across the active part.
+                <div class="info-sublist">
+                  <div>• <em>Tolerance:</em> Match shades with variable color-distance.</div>
+                  <div>• <em>Preserve Shading:</em> Keeps relative white-to-darkness gradients when coloring!</div>
+                </div>
+              </li>
+              <li>
+                <span class="info-shortcut">I</span>
+                <strong>Eyedropper:</strong> Samples any color on the active canvas.
+              </li>
+            </ul>
+          </div>
+
+          <!-- Column 2: Advanced Modifiers -->
+          <div class="info-section">
+            <h3 class="info-section-title">🎛️ Drawing Modifiers</h3>
+            <ul class="info-list">
+              <li>
+                <strong>🪞 Horizontal Mirror (Symmetry):</strong>
+                <p class="info-desc">When active, paints and erases symmetrically across the center. Renders a stunning vertical dashed blue center axis line on the canvas.</p>
+              </li>
+              <li>
+                <strong>🔄 Canvas Flipping & Transforms:</strong>
+                <p class="info-desc">Quickly flip your active part to adjust layout directions. Shortcuts:</p>
+                <div class="info-sublist">
+                  <div>• <span class="info-shortcut">H</span> Flip active canvas Horizontally.</div>
+                  <div>• <span class="info-shortcut">V</span> Flip active canvas Vertically.</div>
+                </div>
+              </li>
+              <li>
+                <strong>Brush Opacity (0% - 100%):</strong>
+                <p class="info-desc">Controls brush and fill transparency, allowing custom shading overlays, gradients, and soft-blending effects.</p>
+              </li>
+              <li>
+                <strong>Saved Color Swatches:</strong>
+                <p class="info-desc">Add, pick, and persist your custom color palettes. Custom swatches are automatically saved locally.</p>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Column 3: Storage & Saves -->
+          <div class="info-section">
+            <h3 class="info-section-title">💾 Auto-Saves & Snapshot Library</h3>
+            <ul class="info-list">
+              <li>
+                <strong>Real-time Auto-Saving:</strong>
+                <p class="info-desc">Your active skin, character name, preview selections, and custom swatches are continuously backed up in your browser.</p>
+              </li>
+              <li>
+                <strong>Ctrl+Z / Ctrl+Y History:</strong>
+                <p class="info-desc">Your full undo/redo action states are serialized and saved so you never lose your history on refresh.</p>
+              </li>
+              <li>
+                <strong>Skins Library & Snapshots:</strong>
+                <p class="info-desc">Create entirely separate skins, view exact file size metrics, capture manual snapshots, and configure background auto-snapshots every few minutes.</p>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Column 4: Import & Export -->
+          <div class="info-section">
+            <h3 class="info-section-title">📂 Asset Import & Game Export</h3>
+            <ul class="info-list">
+              <li>
+                <strong>Batch Folder Import:</strong>
+                <p class="info-desc">Select multiple PNGs. The creator scans the filenames (e.g., <code>experimentEyeOpen.png</code>, <code>TailAnim_0.png</code>) and assigns them to the correct parts instantly.</p>
+              </li>
+              <li>
+                <strong>Single Part Import:</strong>
+                <p class="info-desc">Quickly overwrite the selected sprite part with any custom PNG file of matching size.</p>
+              </li>
+              <li>
+                <strong>Export ZIP:</strong>
+                <p class="info-desc">Downloads a packaged, clean character ZIP archive matching the required folder layout for <em>Casualties: Unknown</em>.</p>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Column 5: Reference Image Overlay -->
+          <div class="info-section">
+            <h3 class="info-section-title">🖼️ Reference Image Overlay</h3>
+            <ul class="info-list">
+              <li>
+                <strong>Tracing Paper Reference:</strong>
+                <p class="info-desc">Load any reference sketch, character sheet, or template PNG/JPG to display as a semi-transparent tracing overlay beneath your grid lines.</p>
+              </li>
+              <li>
+                <strong>Positioning & Navigation Shortcuts:</strong>
+                <p class="info-desc">Move and size your reference overlay directly on the canvas without clicking inputs:</p>
+                <div class="info-sublist">
+                  <div>• 🖱️ <strong>Right-drag</strong> (or <strong>Alt + Drag</strong>) to pan/move overlay.</div>
+                  <div>• 🛞 <strong>Alt + Scroll</strong> (or <strong>Shift + Scroll</strong>) to scale/size overlay.</div>
+                </div>
+              </li>
+              <li>
+                <strong>Filters & Styling:</strong>
+                <p class="info-desc">Open the overlay settings popup (⚙️) to adjust Fit Modes (Stretch, Contain, Cover, Original), invert/grayscale colors, or apply a solid color tint overlay for high-contrast tracing.</p>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="info-footer">
+          <p>Created with 💖 for Casualties: Unknown modders.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Changelog Modal -->
+  <div id="changelogModal" class="modal-overlay" hidden>
+    <div class="modal-card changelog-modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">📜 Expie Maker Changelog</h2>
+        <button id="closeChangelogBtn" class="modal-close-btn" aria-label="Close Changelog">&times;</button>
+      </div>
+      <div id="changelogContent" class="modal-body changelog-body">
+        <p style="text-align: center; color: var(--muted); padding: 24px;">Loading changelog...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contributors Modal -->
+  <div id="contributorsModal" class="modal-overlay" hidden>
+    <div class="modal-card changelog-modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">👥 Expie Maker Contributors</h2>
+        <button id="closeContributorsBtn" class="modal-close-btn" aria-label="Close Contributors">&times;</button>
+      </div>
+      <div id="contributorsContent" class="modal-body changelog-body">
+        <p style="text-align: center; color: var(--muted); padding: 24px;">Loading contributors...</p>
+      </div>
+    </div>
+  </div>
+
 
   <div id="toast" class="toast" hidden></div>
   <script src="zip.js"></script>

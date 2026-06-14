@@ -6,15 +6,18 @@ The game's player character (the "Expie") is composed of separate **Head** and *
 
 ## Features
 
+- **🎨 Multi-Layer Canvas Stack Engine**: Create, rename, delete, reorder, and adjust opacity for multiple drawing layers per part.
+- **🌌 Premium Studio Theme Customizer**: Switch between 5 hand-curated themes (Obsidian Dusk, Cherry Blossom, Cyberpunk Neon, Warm Oak, and Matrix Terminal).
+- **↩️ Unified Global Undo / Redo**: Global action tracking (via `Ctrl+Z` / `Ctrl+Y`) that instantly reverts multi-part modifications (like outlines) in sync.
+- **🖼️ Trace Reference Overlay**: Upload any reference image to overlay, scale, position, and filter (Invert, Grayscale, Tint) to trace with precision.
+- **✨ Sprite FX Outlining**: Single-click Outer and Inner smart outlining that automatically shapes contours across layers.
+- **⚙️ Settings & Backup Recovery**: Complete workspace export and recovery (palette swatches, active layers, skins library, and custom settings) via JSON backups.
+- **📸 Auto-Saves & Time Checkpoints**: Rolling automatic time checkpoints (every 1, 3, 5, or 10 mins) and personal Saved Skins library.
 - **Per-part pixel editor** locked to each sprite's exact native dimensions (e.g. Head 28×16, Eyes 26×12, Tail 54×22).
 - **Drawing tools**: Pencil, Eraser, Flood-fill, Eyedropper — with keyboard shortcuts.
-- **Undo / Redo** per part (up to 60 levels).
-- **Zoom + grid overlay** for precise editing.
-- **Color picker** with alpha channel and a 32-swatch default palette (plus custom swatches).
-- **Loads the real Expie base sprites** as the editable starting template.
-- **Import** your own PNG per part, or batch-import a folder of PNGs by matching filenames.
-- **Face preview** composites the selected head shape with eyes overlaid (approximate in-game layering).
-- **Export** a complete `.zip` with the correct `Head/` + `Body/` folder structure, original filenames, and bundled Unity `.txt` metadata — ready to drop into the game.
+- **Zoom + high-contrast grid overlay** for precise editing.
+- **Face preview** composites the selected head shape with expression eyes (matching in-game rendering layer orders).
+- **Export** a game-ready folder structure as a compressed `.zip` containing correct subdirectories (`Head/` + `Body/`) and Unity text manifests.
 
 ## Getting Started
 
