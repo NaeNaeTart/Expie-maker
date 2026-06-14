@@ -237,6 +237,34 @@ body {
 .swatch .fill { display: block; width: 100%; height: 100%; border-radius: 2px; background: var(--c); }
 .swatch.active { outline: 1px solid var(--text); outline-offset: 1px; }
 
+/* ─ Shading Ramp Swatches ─ */
+.ramp-swatch {
+  flex: 1;
+  aspect-ratio: 1;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.12s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.12s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.ramp-swatch:hover {
+  transform: scale(1.15) translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  z-index: 2;
+  border-color: var(--text);
+}
+.ramp-swatch.active {
+  outline: 1.5px solid var(--text);
+  outline-offset: 1.5px;
+  z-index: 3;
+}
+.ramp-swatch .fill {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 2px;
+}
+
 .hint { color: var(--muted); font-size: 10px; margin: 0 0 6px; line-height: 1.3; }
 .preview-controls { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
 .preview-controls label { display: flex; flex-direction: column; gap: 2px; font-size: 10px; color: var(--muted); }

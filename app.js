@@ -55,6 +55,14 @@
   const zoomSlider = $("#zoom");
   const gridToggle = $("#gridToggle");
   const mirrorToggle = $("#mirrorToggle");
+  
+  // Shading Ramp Builder DOM Selectors
+  const shadingRampProfile = $("#shadingRampProfile");
+  const shadingRampSize = $("#shadingRampSize");
+  const shadingRampDisplay = $("#shadingRampDisplay");
+  const shadingRampBaseLabel = $("#shadingRampBaseLabel");
+  const addRampSwatchBtn = $("#addRampSwatch");
+
 
   // ─── Helpers ────────────────────────────────────────────────────────
   function rgbaToHex(r, g, b) {
@@ -1261,6 +1269,8 @@
     bindEvents();
     startPreviewLoop();
     updateHistoryButtons();
+    syncColorUI();
+
 
     if (loaded) {
       toast("Restored your progress from auto-save", "ok");
@@ -2191,6 +2201,114 @@
     colorPicker.value = hex;
     colorHex.textContent = hex.toUpperCase();
     updateActiveSwatch();
+    updateShadingRamp();
+  }
+
+  function blendAngle(from, to, t) {
+    let diff = (to - from) % 360;
+    if (diff < -180) diff += 360;
+    if (diff > 180) diff -= 360;
+    return (from + diff * t + 360) % 360;
+  }
+
+  function generateShadingRamp(r, g, b, profile, size) {
+    const hsl = rgbToHsl(r, g, b);
+    const hBase = hsl.h * 360;
+    const sBase = hsl.s;
+    const lBase = hsl.l;
+    
+    const M = Math.floor(size / 2);
+    const colors = [];
+    
+    for (let i = 0; i < size; i++) {
+      const dx = i - M;
+      let hStep, sStep, lStep;
+      
+      if (dx === 0) {
+        hStep = hBase;
+        sStep = sBase;
+        lStep = lBase;
+      } else if (dx < 0) {
+        // Shadows: moving towards darker colors
+        const f = Math.abs(dx) / (M + 0.5);
+        if (profile === "classic") {
+          hStep = hBase;
+          sStep = sBase + (Math.min(1.0, sBase + 0.15) - sBase) * f;
+          lStep = lBase - (lBase - Math.max(0.05, lBase - 0.35)) * f;
+        } else if (profile === "warm-cool") {
+          // Hue shift towards purple-blue (250 degrees)
+          hStep = blendAngle(hBase, 250, 0.45 * f);
+          sStep = sBase + (Math.max(0.45, Math.min(0.95, sBase + 0.15)) - sBase) * f;
+          lStep = lBase - (lBase - Math.max(0.08, lBase * 0.4)) * f;
+        } else if (profile === "pastel") {
+          hStep = hBase;
+          sStep = sBase - (sBase - Math.max(0.1, sBase * 0.8)) * f;
+          lStep = lBase - (lBase - Math.max(0.15, lBase - 0.20)) * f;
+        }
+      } else {
+        // Highlights: moving towards lighter colors
+        const f = dx / (M + 0.5);
+        if (profile === "classic") {
+          hStep = hBase;
+          sStep = sBase - (sBase - Math.max(0.0, sBase - 0.20)) * f;
+          lStep = lBase + (Math.min(0.97, lBase + 0.35) - lBase) * f;
+        } else if (profile === "warm-cool") {
+          // Hue shift towards warm gold-yellow (50 degrees)
+          hStep = blendAngle(hBase, 50, 0.35 * f);
+          sStep = sBase - (sBase - Math.max(0.1, sBase * 0.75)) * f;
+          lStep = lBase + (0.96 - lBase) * 0.85 * f;
+        } else if (profile === "pastel") {
+          hStep = hBase;
+          sStep = sBase - (sBase - 0.35) * 0.5 * f;
+          lStep = lBase + (Math.min(0.95, lBase + 0.22) - lBase) * f;
+        }
+      }
+      
+      const hNormalized = ((hStep % 360) + 360) % 360 / 360;
+      const sClamped = Math.max(0, Math.min(1, sStep));
+      const lClamped = Math.max(0, Math.min(1, lStep));
+      
+      const rgb = hslToRgb(hNormalized, sClamped, lClamped);
+      const hex = rgbaToHex(rgb.r, rgb.g, rgb.b);
+      colors.push(hex);
+    }
+    
+    return colors;
+  }
+
+  function updateShadingRamp() {
+    if (!shadingRampDisplay) return;
+    shadingRampDisplay.innerHTML = "";
+    
+    const hex = rgbaToHex(color.r, color.g, color.b);
+    if (shadingRampBaseLabel) {
+      shadingRampBaseLabel.textContent = "Base: " + hex.toUpperCase();
+    }
+    
+    const profile = shadingRampProfile ? shadingRampProfile.value : "warm-cool";
+    const size = shadingRampSize ? parseInt(shadingRampSize.value, 10) : 5;
+    
+    const rampColors = generateShadingRamp(color.r, color.g, color.b, profile, size);
+    
+    rampColors.forEach(col => {
+      const s = document.createElement("div");
+      s.className = "ramp-swatch";
+      s.style.setProperty("--c", col);
+      s.innerHTML = `<span class="fill" style="background:${col}"></span>`;
+      s.title = col.toUpperCase();
+      
+      if (col.toLowerCase().trim() === hex.toLowerCase().trim()) {
+        s.classList.add("active");
+      }
+      
+      s.addEventListener("click", () => {
+        const c = hexToRgb(col);
+        color.r = c.r; color.g = c.g; color.b = c.b;
+        syncColorUI();
+      });
+      
+      shadingRampDisplay.appendChild(s);
+    });
   }
   function buildPalette() {
     paletteEl.innerHTML = "";
@@ -2476,6 +2594,40 @@
       const hex = rgbaToHex(color.r, color.g, color.b);
       addSwatchToPalette(hex, true);
     });
+
+    // Shading Ramp Events
+    if (shadingRampProfile) {
+      shadingRampProfile.addEventListener("change", updateShadingRamp);
+    }
+    if (shadingRampSize) {
+      shadingRampSize.addEventListener("change", updateShadingRamp);
+    }
+    if (addRampSwatchBtn) {
+      addRampSwatchBtn.addEventListener("click", () => {
+        const profile = shadingRampProfile ? shadingRampProfile.value : "warm-cool";
+        const size = shadingRampSize ? parseInt(shadingRampSize.value, 10) : 5;
+        const rampColors = generateShadingRamp(color.r, color.g, color.b, profile, size);
+        let addedCount = 0;
+        rampColors.forEach(col => {
+          try {
+            const raw = localStorage.getItem("expie_custom_swatches");
+            const customSwatches = raw ? JSON.parse(raw) : [];
+            if (!customSwatches.includes(col)) {
+              addSwatchToPalette(col, true);
+              addedCount++;
+            }
+          } catch (e) {
+            console.error("Failed to check custom swatches:", e);
+          }
+        });
+        if (addedCount > 0) {
+          toast(`Saved ${addedCount} shading ramp colors!`, "ok");
+        } else {
+          toast("Ramp colors already in palette", "");
+        }
+      });
+    }
+
 
     // Zoom & grid
     zoomSlider.addEventListener("input", () => {

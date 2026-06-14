@@ -194,6 +194,34 @@
         <div class="active-colors-title" style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-bottom: 6px;" title="All colors currently used on this part's canvas">Canvas Colors</div>
         <div id="activeColors" class="palette active-colors-list" style="max-height: 52px; overflow-y: auto; gap: 4px;"></div>
       </div>
+
+      <!-- Shading Ramp Generator Panel -->
+      <div id="shadingRampPanel" class="replace-settings" style="margin-top: 12px; margin-bottom: 4px;">
+        <div class="replace-settings-title" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <span>🎨 Shading Ramp</span>
+          <span id="shadingRampBaseLabel" style="font-size: 10px; font-weight: normal; color: var(--muted); font-family: ui-monospace, monospace;">#5B8CFF</span>
+        </div>
+        
+        <div style="display: flex; gap: 6px; margin-bottom: 8px;">
+          <div style="flex: 2; min-width: 0;">
+            <select id="shadingRampProfile" class="settings-select" style="width: 100%; font-size: 11px; padding: 2px 4px; height: 24px;" title="Select the mathematical lighting/shading technique">
+              <option value="warm-cool" selected>🌡️ Warm / Cool</option>
+              <option value="classic">🌓 Classic Mono</option>
+              <option value="pastel">🌸 Pastel Soft</option>
+            </select>
+          </div>
+          <div style="flex: 1; min-width: 0;">
+            <select id="shadingRampSize" class="settings-select" style="width: 100%; font-size: 11px; padding: 2px 4px; height: 24px;" title="Number of color steps to generate">
+              <option value="5" selected>5 Steps</option>
+              <option value="7">7 Steps</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="shadingRampDisplay" style="display: flex; gap: 4px; margin-bottom: 8px; justify-content: space-between;"></div>
+
+        <button id="addRampSwatch" class="btn btn-ghost btn-small" style="width: 100%; padding: 4px; font-size: 10px; height: 24px; display: block;" title="Save all generated ramp colors to your custom palette">+ Save Ramp to Palette</button>
+      </div>
       
       <div id="replaceSettings" class="replace-settings">
         <div class="replace-settings-title">Replace Options</div>
