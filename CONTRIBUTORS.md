@@ -7,3 +7,4 @@ Thank you to everyone who has contributed to the development and polish of the *
 
 ## 💖 Special Thanks
 - **Toky** - Supportive
+- **Lukovich** - Gay
